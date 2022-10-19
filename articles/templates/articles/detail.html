@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load django_bootstrap5 %}
+{% block css %}{% endblock css %}
+{% block content %}
+  <div class='d-flex justify-content-between mb-5'>
+    <h1>{{ article.title }}</h1>
+    <div class='d-flex flex-column'>
+      <span class='float-end fs-6 fw-light text-secondary'>{{ article.created_at }}</span>
+      <span class='float-end fs-6 fw-light text-secondary'>작성자 :
+        {{ article.user }}</span>
+    </div>
+  </div>
+  {% if article.image %}
+    <img src="{{ article.image.url }}" alt="{{ article.image }}">
+  {% endif %}
+  <p style='height:10rem;' class='my-3 p-2'>{{ article.content }}</p>
+  {% if article.user == request.user %}
+    <div class="d-flex justify-content-end">
+      <a class='btn btn-secondary mx-2' href="{% url 'articles:update' article.pk %}">수정</a>
+      <a class='btn btn-secondary' href="{% url 'articles:delete' article.pk %}">삭제</a>
+    </div>
+  {% endif %}
+  <h3 class='my-3'>{{ comments|length }}개의 댓글</h3>
+  <hr>
+  {% for comment in comments %}
+    <div class='d-flex justify-content-between'>
+      <div>
+        <p>{{ comment.user }}
+          <span style="font-size: .7rem;" class='text-secondary mx-2'>
+            {{ comment.created_at }}
+          </span>
+        </p>
+        <p>{{ comment.content }}</p>
+      </div>
+      {% if comment.user == request.user %}
+        <form action="{% url 'articles:delete_comment' article.pk comment.pk %}" method="POST">
+          {% csrf_token %}
+          <input class='btn btn-outline-danger' type="submit" value="삭제">
+        </form>
+      {% endif %}
+    </div>
+    <hr>
+  {% endfor %}
+  <form action="{% url 'articles:create_comment' article.pk %}" method="POST">
+    {% csrf_token %}
+    {% bootstrap_form comment_form %}
+    <input class='btn btn-outline-secondary' type="submit" value="OK">
+  </form>
+{% endblock content %}
